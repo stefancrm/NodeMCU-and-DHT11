@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "DHTesp.h"
+#include "LittleFS.h"
 
 DHTesp dht;
 
@@ -9,11 +10,24 @@ void setup() {
   delay(2000);
   Serial.println( "NodeMCU DHT11 Weather station");
   dht.setup(2, DHTesp::DHT11); // data pin 2
+  if(!LittleFS.begin()){
+    Serial.println("An Error has occurred while mounting LittleFS");
+    return;
+  }
+  File file = LittleFS.open("/test.txt", "r");
+  if(!file){
+    Serial.println("Failed to open file for reading");
+    return;
+  }
+  
+  Serial.println("File Content:");
+  while(file.available()){
+    Serial.write(file.read());
+  }
+  file.close();
 }
 
-
-  // put your main code here, to run repeatedly:
-void loop(){
+void dht_serial() {
   delay(2000);
 
   float humidity = dht.getHumidity();
@@ -24,6 +38,10 @@ void loop(){
   Serial.print(temperature, 1);
   Serial.print(" ");
   Serial.println("C");
+}
 
+  // put your main code here, to run repeatedly:
+void loop(){
+  dht_serial();
 }
 
